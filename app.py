@@ -26,6 +26,9 @@ colors = {
 selected = st.radio("Cor", list(colors.keys()))
 selected_color = colors[selected]
 
+# modo pintar/apagar
+mode = st.radio("Modo", ["➕ Pintar", "➖ Apagar"])
+
 # =========================
 # GRID STATE
 # =========================
@@ -37,10 +40,11 @@ if len(st.session_state.grid) != height or len(st.session_state.grid[0]) != widt
     st.session_state.grid = [[-1]*width for _ in range(height)]
 
 # =========================
-# GRID VISUAL (COM EIXOS)
+# GRID VISUAL (COM EIXOS + MODO)
 # =========================
-def render_editor(grid, selected_color):
+def render_editor(grid, selected_color, mode):
     grid_json = json.dumps(grid)
+    mode_value = 1 if "Pintar" in mode else 0
 
     html = f"""
     <style>
@@ -89,6 +93,7 @@ def render_editor(grid, selected_color):
     const selectedColor = {selected_color};
     const width = {width};
     const height = {height};
+    const mode = {mode_value};
 
     function getColor(val) {{
         if(val === 0) return "green";
@@ -114,28 +119,28 @@ def render_editor(grid, selected_color):
                     div.className = "axis";
                 }}
 
-                // topo (X)
+                // topo (X) -> começa em 1
                 else if(y === -1 && x >= 0 && x < width) {{
                     div.className = "axis";
-                    div.innerText = x;
+                    div.innerText = x + 1;
                 }}
 
                 // fundo (X)
                 else if(y === height && x >= 0 && x < width) {{
                     div.className = "axis";
-                    div.innerText = x;
+                    div.innerText = x + 1;
                 }}
 
                 // esquerda (Y)
                 else if(x === -1 && y >= 0 && y < height) {{
                     div.className = "axis";
-                    div.innerText = y;
+                    div.innerText = y + 1;
                 }}
 
                 // direita (Y)
                 else if(x === width && y >= 0 && y < height) {{
                     div.className = "axis";
-                    div.innerText = y;
+                    div.innerText = y + 1;
                 }}
 
                 // grid normal
@@ -144,8 +149,13 @@ def render_editor(grid, selected_color):
                     div.style.background = getColor(gridData[y][x]);
 
                     div.onclick = () => {{
-                        gridData[y][x] = selectedColor;
-                        div.style.background = getColor(selectedColor);
+                        if(mode === 1) {{
+                            gridData[y][x] = selectedColor;
+                            div.style.background = getColor(selectedColor);
+                        }} else {{
+                            gridData[y][x] = -1;
+                            div.style.background = "#111";
+                        }}
                     }}
                 }}
 
@@ -160,7 +170,7 @@ def render_editor(grid, selected_color):
 
     components.html(html, height=900, scrolling=True)
 
-render_editor(st.session_state.grid, selected_color)
+render_editor(st.session_state.grid, selected_color, mode)
 
 # =========================
 # EXPORT
