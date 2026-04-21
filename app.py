@@ -26,7 +26,6 @@ colors = {
 selected = st.radio("Cor", list(colors.keys()))
 selected_color = colors[selected]
 
-# modo pintar/apagar
 mode = st.radio("Modo", ["➕ Pintar", "➖ Apagar"])
 
 # =========================
@@ -35,16 +34,34 @@ mode = st.radio("Modo", ["➕ Pintar", "➖ Apagar"])
 if "grid" not in st.session_state:
     st.session_state.grid = [[-1]*width for _ in range(height)]
 
-# reset se mudar tamanho
 if len(st.session_state.grid) != height or len(st.session_state.grid[0]) != width:
     st.session_state.grid = [[-1]*width for _ in range(height)]
 
 # =========================
-# GRID VISUAL (COM EIXOS + MODO)
+# CLICK HANDLER (recebe do JS)
 # =========================
-def render_editor(grid, selected_color, mode):
+click = st.experimental_get_query_params().get("click")
+
+if click:
+    try:
+        y, x = map(int, click[0].split(","))
+
+        if mode == "➕ Pintar":
+            st.session_state.grid[y][x] = selected_color
+        else:
+            st.session_state.grid[y][x] = -1
+
+        # limpar query para não repetir clique
+        st.experimental_set_query_params()
+
+    except:
+        pass
+
+# =========================
+# GRID VISUAL
+# =========================
+def render_editor(grid):
     grid_json = json.dumps(grid)
-    mode_value = 1 if "Pintar" in mode else 0
 
     html = f"""
     <style>
@@ -90,10 +107,8 @@ def render_editor(grid, selected_color, mode):
 
     <script>
     const gridData = {grid_json};
-    const selectedColor = {selected_color};
     const width = {width};
     const height = {height};
-    const mode = {mode_value};
 
     function getColor(val) {{
         if(val === 0) return "green";
@@ -113,49 +128,39 @@ def render_editor(grid, selected_color, mode):
 
                 let div = document.createElement("div");
 
-                // cantos vazios
                 if((x === -1 && y === -1) || (x === width && y === -1) ||
                    (x === -1 && y === height) || (x === width && y === height)) {{
                     div.className = "axis";
                 }}
 
-                // topo (X) -> começa em 1
                 else if(y === -1 && x >= 0 && x < width) {{
                     div.className = "axis";
                     div.innerText = x + 1;
                 }}
 
-                // fundo (X)
                 else if(y === height && x >= 0 && x < width) {{
                     div.className = "axis";
                     div.innerText = x + 1;
                 }}
 
-                // esquerda (Y)
                 else if(x === -1 && y >= 0 && y < height) {{
                     div.className = "axis";
                     div.innerText = y + 1;
                 }}
 
-                // direita (Y)
                 else if(x === width && y >= 0 && y < height) {{
                     div.className = "axis";
                     div.innerText = y + 1;
                 }}
 
-                // grid normal
                 else {{
                     div.className = "cell";
                     div.style.background = getColor(gridData[y][x]);
 
                     div.onclick = () => {{
-                        if(mode === 1) {{
-                            gridData[y][x] = selectedColor;
-                            div.style.background = getColor(selectedColor);
-                        }} else {{
-                            gridData[y][x] = -1;
-                            div.style.background = "#111";
-                        }}
+                        const url = new URL(window.location);
+                        url.searchParams.set("click", y + "," + x);
+                        window.location.href = url.toString();
                     }}
                 }}
 
@@ -170,7 +175,7 @@ def render_editor(grid, selected_color, mode):
 
     components.html(html, height=900, scrolling=True)
 
-render_editor(st.session_state.grid, selected_color, mode)
+render_editor(st.session_state.grid)
 
 # =========================
 # EXPORT
