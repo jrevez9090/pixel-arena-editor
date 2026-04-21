@@ -38,7 +38,7 @@ if len(st.session_state.grid) != height or len(st.session_state.grid[0]) != widt
     st.session_state.grid = [[-1]*width for _ in range(height)]
 
 # =========================
-# CLICK HANDLER (novo método)
+# CLICK HANDLER
 # =========================
 query_params = st.query_params
 
@@ -51,7 +51,6 @@ if "click" in query_params:
         else:
             st.session_state.grid[y][x] = -1
 
-        # limpar URL
         st.query_params.clear()
 
     except:
@@ -65,10 +64,6 @@ def render_editor(grid):
 
     html = f"""
     <style>
-    body {{
-        background-color: #0e1117;
-    }}
-
     .wrapper {{
         display: flex;
         justify-content: center;
@@ -158,9 +153,9 @@ def render_editor(grid):
                     div.style.background = getColor(gridData[y][x]);
 
                     div.onclick = () => {{
-                        const url = new URL(window.location);
+                        const url = new URL(window.parent.location);
                         url.searchParams.set("click", y + "," + x);
-                        window.location.href = url.toString();
+                        window.parent.location.href = url.toString();
                     }}
                 }}
 
