@@ -40,18 +40,22 @@ if len(st.session_state.grid) != height or len(st.session_state.grid[0]) != widt
 # =========================
 # CLICK HANDLER
 # =========================
-query_params = st.query_params
+params = st.query_params
 
-if "click" in query_params:
+if "click" in params:
     try:
-        y, x = map(int, query_params["click"].split(","))
+        y, x = map(int, params["click"].split(","))
 
         if mode == "➕ Pintar":
             st.session_state.grid[y][x] = selected_color
         else:
             st.session_state.grid[y][x] = -1
 
+        # limpar param
         st.query_params.clear()
+
+        # 💥 força refresh
+        st.rerun()
 
     except:
         pass
