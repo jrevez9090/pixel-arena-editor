@@ -38,21 +38,21 @@ if len(st.session_state.grid) != height or len(st.session_state.grid[0]) != widt
     st.session_state.grid = [[-1]*width for _ in range(height)]
 
 # =========================
-# CLICK HANDLER (recebe do JS)
+# CLICK HANDLER (novo método)
 # =========================
-click = st.experimental_get_query_params().get("click")
+query_params = st.query_params
 
-if click:
+if "click" in query_params:
     try:
-        y, x = map(int, click[0].split(","))
+        y, x = map(int, query_params["click"].split(","))
 
         if mode == "➕ Pintar":
             st.session_state.grid[y][x] = selected_color
         else:
             st.session_state.grid[y][x] = -1
 
-        # limpar query para não repetir clique
-        st.experimental_set_query_params()
+        # limpar URL
+        st.query_params.clear()
 
     except:
         pass
