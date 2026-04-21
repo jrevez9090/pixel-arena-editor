@@ -1,6 +1,5 @@
 import streamlit as st
 import json
-import streamlit.components.v1 as components
 
 st.set_page_config(layout="wide")
 
@@ -38,143 +37,67 @@ if len(st.session_state.grid) != height or len(st.session_state.grid[0]) != widt
     st.session_state.grid = [[-1]*width for _ in range(height)]
 
 # =========================
-# CLICK HANDLER
+# CSS PARA GRID COMPACTO
 # =========================
-params = st.query_params
+st.markdown("""
+<style>
+div[data-testid="stButton"] button {
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #222;
+}
 
-if "click" in params:
-    try:
-        y, x = map(int, params["click"].split(","))
-
-        if mode == "➕ Pintar":
-            st.session_state.grid[y][x] = selected_color
-        else:
-            st.session_state.grid[y][x] = -1
-
-        # limpar param
-        st.query_params.clear()
-
-        # 💥 força refresh
-        st.rerun()
-
-    except:
-        pass
+.block-container {
+    padding-top: 1rem;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # =========================
-# GRID VISUAL
+# CENTRALIZAR
 # =========================
-def render_editor(grid):
-    grid_json = json.dumps(grid)
+left, center, right = st.columns([1,2,1])
 
-    html = f"""
-    <style>
-    .wrapper {{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        width: 100%;
-    }}
+with center:
 
-    .editor {{
-        display: grid;
-        grid-template-columns: 40px repeat({width}, 18px) 40px;
-        grid-template-rows: 20px repeat({height}, 18px) 20px;
-        gap: 1px;
-        background: #111;
-        padding: 10px;
-    }}
+    # eixo X topo
+    cols = st.columns([0.5] + [1]*width + [0.5])
+    for i in range(width):
+        cols[i+1].markdown(f"<div style='text-align:center;font-size:10px'>{i+1}</div>", unsafe_allow_html=True)
 
-    .cell {{
-        width: 18px;
-        height: 18px;
-        border: 1px solid #222;
-        cursor: pointer;
-    }}
+    # grid
+    for y in range(height):
 
-    .axis {{
-        font-size: 10px;
-        color: #aaa;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }}
-    </style>
+        row = st.columns([0.5] + [1]*width + [0.5])
 
-    <div class="wrapper">
-        <div class="editor" id="editor"></div>
-    </div>
+        # eixo Y esquerda
+        row[0].markdown(f"<div style='font-size:10px'>{y+1}</div>", unsafe_allow_html=True)
 
-    <script>
-    const gridData = {grid_json};
-    const width = {width};
-    const height = {height};
+        for x in range(width):
+            val = st.session_state.grid[y][x]
 
-    function getColor(val) {{
-        if(val === 0) return "green";
-        if(val === 1) return "blue";
-        if(val === 2) return "red";
-        if(val === 3) return "purple";
-        return "#111";
-    }}
+            color = "⬛"
+            if val == 0: color = "🟩"
+            elif val == 1: color = "🟦"
+            elif val == 2: color = "🟥"
+            elif val == 3: color = "🟪"
 
-    const container = document.getElementById("editor");
+            if row[x+1].button(color, key=f"{x}-{y}"):
 
-    function draw() {{
-        container.innerHTML = "";
+                if mode == "➕ Pintar":
+                    st.session_state.grid[y][x] = selected_color
+                else:
+                    st.session_state.grid[y][x] = -1
 
-        for(let y = -1; y <= height; y++) {{
-            for(let x = -1; x <= width; x++) {{
+        # eixo Y direita
+        row[-1].markdown(f"<div style='font-size:10px'>{y+1}</div>", unsafe_allow_html=True)
 
-                let div = document.createElement("div");
-
-                if((x === -1 && y === -1) || (x === width && y === -1) ||
-                   (x === -1 && y === height) || (x === width && y === height)) {{
-                    div.className = "axis";
-                }}
-
-                else if(y === -1 && x >= 0 && x < width) {{
-                    div.className = "axis";
-                    div.innerText = x + 1;
-                }}
-
-                else if(y === height && x >= 0 && x < width) {{
-                    div.className = "axis";
-                    div.innerText = x + 1;
-                }}
-
-                else if(x === -1 && y >= 0 && y < height) {{
-                    div.className = "axis";
-                    div.innerText = y + 1;
-                }}
-
-                else if(x === width && y >= 0 && y < height) {{
-                    div.className = "axis";
-                    div.innerText = y + 1;
-                }}
-
-                else {{
-                    div.className = "cell";
-                    div.style.background = getColor(gridData[y][x]);
-
-                    div.onclick = () => {{
-                        const url = new URL(window.parent.location);
-                        url.searchParams.set("click", y + "," + x);
-                        window.parent.location.href = url.toString();
-                    }}
-                }}
-
-                container.appendChild(div);
-            }}
-        }}
-    }}
-
-    draw();
-    </script>
-    """
-
-    components.html(html, height=900, scrolling=True)
-
-render_editor(st.session_state.grid)
+    # eixo X baixo
+    cols = st.columns([0.5] + [1]*width + [0.5])
+    for i in range(width):
+        cols[i+1].markdown(f"<div style='text-align:center;font-size:10px'>{i+1}</div>", unsafe_allow_html=True)
 
 # =========================
 # EXPORT
