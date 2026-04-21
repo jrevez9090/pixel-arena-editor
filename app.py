@@ -37,18 +37,31 @@ if len(st.session_state.grid) != height or len(st.session_state.grid[0]) != widt
     st.session_state.grid = [[-1]*width for _ in range(height)]
 
 # =========================
-# CSS PARA GRID COMPACTO
+# CSS CORRIGIDO (QUADRADOS)
 # =========================
 st.markdown("""
 <style>
 div[data-testid="stButton"] button {
-    width: 18px;
-    height: 18px;
-    padding: 0;
-    margin: 0;
-    border: 1px solid #222;
+    width: 20px !important;
+    height: 20px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0px !important;   /* 🔥 remove formato oval */
+    border: 1px solid #333 !important;
+    font-size: 10px !important;
+    line-height: 1 !important;
 }
 
+div[data-testid="stButton"] {
+    display: inline-block;
+}
+
+/* reduzir espaço entre colunas */
+[data-testid="column"] {
+    padding: 0px !important;
+}
+
+/* centralizar melhor */
 .block-container {
     padding-top: 1rem;
 }
@@ -56,21 +69,21 @@ div[data-testid="stButton"] button {
 """, unsafe_allow_html=True)
 
 # =========================
-# CENTRALIZAR
+# CENTRALIZAR GRID
 # =========================
 left, center, right = st.columns([1,2,1])
 
 with center:
 
     # eixo X topo
-    cols = st.columns([0.5] + [1]*width + [0.5])
+    cols = st.columns([0.3] + [1]*width + [0.3])
     for i in range(width):
         cols[i+1].markdown(f"<div style='text-align:center;font-size:10px'>{i+1}</div>", unsafe_allow_html=True)
 
     # grid
     for y in range(height):
 
-        row = st.columns([0.5] + [1]*width + [0.5])
+        row = st.columns([0.3] + [1]*width + [0.3])
 
         # eixo Y esquerda
         row[0].markdown(f"<div style='font-size:10px'>{y+1}</div>", unsafe_allow_html=True)
@@ -95,7 +108,7 @@ with center:
         row[-1].markdown(f"<div style='font-size:10px'>{y+1}</div>", unsafe_allow_html=True)
 
     # eixo X baixo
-    cols = st.columns([0.5] + [1]*width + [0.5])
+    cols = st.columns([0.3] + [1]*width + [0.3])
     for i in range(width):
         cols[i+1].markdown(f"<div style='text-align:center;font-size:10px'>{i+1}</div>", unsafe_allow_html=True)
 
